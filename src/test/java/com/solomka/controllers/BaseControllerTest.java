@@ -33,8 +33,8 @@ public class BaseControllerTest {
 
     @BeforeAll
     public void setup() {
-        mockMvc = MockMvcBuilders
-                .webAppContextSetup(context)
+        this.mockMvc = MockMvcBuilders
+                .webAppContextSetup(this.context)
                 .build();
     }
 }

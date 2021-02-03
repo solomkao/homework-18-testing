@@ -25,8 +25,8 @@ public class BookServiceTest {
     @Test
     void getBookByIdSuccessTest() {
         String bookId = "book_id";
-        when(bookDao.getById(bookId)).thenReturn(new Book(bookId));
-        Book bookFromDB = bookService.getById(bookId);
+        when(this.bookDao.getById(bookId)).thenReturn(new Book(bookId));
+        Book bookFromDB = this.bookService.getById(bookId);
         assertEquals(
                 bookId,
                 bookFromDB.getBookId()
@@ -37,7 +37,7 @@ public class BookServiceTest {
     void getBookByIdBadIdExceptionTest() {
         assertThrows(
                 BadIdException.class,
-                () -> bookService.getById("       ")
+                () -> this.bookService.getById("       ")
         );
     }
 
@@ -45,17 +45,17 @@ public class BookServiceTest {
     void getValidatedBookNameExpectBookNameIsNullExceptionTest() {
         assertThrows(
                 BookNameIsNullException.class,
-                () -> bookService.getValidatedBookName(null)
+                () -> this.bookService.getValidatedBookName(null)
         );
     }
 
     @Test
-    void deleteBookByIdSuccessfulTest(){
-        String bookId ="book_id";
+    void deleteBookByIdSuccessfulTest() {
+        String bookId = "book_id";
         Book book = new Book();
         book.setBookId(bookId);
-        when(bookDao.deleteById(bookId)).thenReturn(book);
-        Book bookDeleted = bookService.deleteBookById(bookId);
+        when(this.bookDao.deleteById(bookId)).thenReturn(book);
+        Book bookDeleted = this.bookService.deleteBookById(bookId);
         assertEquals(
                 book,
                 bookDeleted
@@ -63,12 +63,12 @@ public class BookServiceTest {
     }
 
     @Test
-    void deleteBookByIdFailedTest(){
-        String bookId ="book_id";
+    void deleteBookByIdFailedTest() {
+        String bookId = "book_id";
         Book book = new Book();
         book.setBookId(bookId);
-        when(bookDao.deleteById(bookId)).thenReturn(new Book("another_book_id"));
-        Book bookDeleted = bookService.deleteBookById(bookId);
+        when(this.bookDao.deleteById(bookId)).thenReturn(new Book("another_book_id"));
+        Book bookDeleted = this.bookService.deleteBookById(bookId);
         assertNotEquals(
                 book,
                 bookDeleted

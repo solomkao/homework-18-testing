@@ -2,16 +2,43 @@ package com.solomka.controllers;
 
 import com.solomka.models.Book;
 import com.solomka.models.CreateBookDto;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import java.util.Arrays;
 
 public class BookControllerTest extends BaseControllerTest {
+
+    @Autowired
+    private BookController bookController;
+
+    private final TestRestTemplate template = new TestRestTemplate();
+
+    private final String url = "/books";
+
+    @Test
+    public void testBookController() {
+        Assertions.assertNotNull(this.bookController);
+    }
 
     @Test
     public void createBookTest() throws Exception {
@@ -23,12 +50,12 @@ public class BookControllerTest extends BaseControllerTest {
         createBookDto.setYearOfPublication(2020);
         createBookDto.setAuthors(Arrays.asList("author1", "author2"));
 
-        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.post("/books")
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.post(this.url)
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(OBJECT_MAPPER.writeValueAsString(createBookDto));
 
-        MvcResult result = mockMvc.perform(requestBuilder)
-                .andExpect(MockMvcResultMatchers.status().isCreated())
+        MvcResult result = this.mockMvc.perform(requestBuilder)
+                .andExpect(status().isCreated())
                 .andReturn();
 
         Book book = OBJECT_MAPPER.readValue(
@@ -36,7 +63,39 @@ public class BookControllerTest extends BaseControllerTest {
                 Book.class
         );
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/books/" + book.getBookId()))
-                .andExpect(MockMvcResultMatchers.status().isOk());
+        this.mockMvc.perform(get(url+"/" + book.getBookId()))
+                .andExpect(status().isOk());
     }
+
+    @Test
+    public void getAllTest() throws Exception {
+        String expected = "{\"bookId\":\"random_id_value_5\",\"name\":\"7 habits of highly effective\",\"description\":\"\",\"authors\":[\"Stephen R Covey \"],\"yearOfPublication\":1989,\"numberOfWords\":464368,\"rating\":10}";
+        this.mockMvc.perform(get(this.url)).andExpect(status().isOk())
+                .andExpect(content().string(containsString(expected)));
+    }
+
+    @Test
+    public void getBookByIdTest() throws Exception {
+        String expected = "random_id_value_3";
+        this.mockMvc.perform(get(this.url+"/"+expected))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString(expected)));
+    }
+
+    @Test
+    public void getBookByIdFailedTest() throws Exception {
+        String expected = "some id";
+        this.mockMvc.perform(get(this.url+"/"+expected))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void deleteById() throws Exception{
+        String expected = "random_id_value_1";
+        this.mockMvc.perform(delete(this.url+"/"+expected))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString(expected)));
+    }
+
+
 }
