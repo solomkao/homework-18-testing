@@ -4,43 +4,29 @@ import com.solomka.daos.BookDao;
 import com.solomka.exceptions.BadIdException;
 import com.solomka.exceptions.BookNameIsNullException;
 import com.solomka.models.Book;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest
+@RunWith(SpringRunner.class)
 public class BookServiceTest {
-
-    private final BookService bookService;
-
+    @InjectMocks
+    private BookService bookService;
     @Mock
-    private BookDao bookDao = new BookDao();
-
-    public BookServiceTest() {
-        bookService = new BookService(bookDao);
-    }
-
-    @BeforeAll
-    void setUp() {
-        bookDao = Mockito.mock(BookDao.class);
-    }
+    private BookDao bookDao;
 
     @Test
     void getBookByIdSuccessTest() {
-        String bookId = "book-id";
-
-        Mockito.when(bookDao.getById(bookId)).thenReturn(new Book(bookId));
-
+        String bookId = "book_id";
+        when(bookDao.getById(bookId)).thenReturn(new Book(bookId));
         Book bookFromDB = bookService.getById(bookId);
-
         assertEquals(
                 bookId,
                 bookFromDB.getBookId()
@@ -60,6 +46,32 @@ public class BookServiceTest {
         assertThrows(
                 BookNameIsNullException.class,
                 () -> bookService.getValidatedBookName(null)
+        );
+    }
+
+    @Test
+    void deleteBookByIdSuccessfulTest(){
+        String bookId ="book_id";
+        Book book = new Book();
+        book.setBookId(bookId);
+        when(bookDao.deleteById(bookId)).thenReturn(book);
+        Book bookDeleted = bookService.deleteBookById(bookId);
+        assertEquals(
+                book,
+                bookDeleted
+        );
+    }
+
+    @Test
+    void deleteBookByIdFailedTest(){
+        String bookId ="book_id";
+        Book book = new Book();
+        book.setBookId(bookId);
+        when(bookDao.deleteById(bookId)).thenReturn(new Book("another_book_id"));
+        Book bookDeleted = bookService.deleteBookById(bookId);
+        assertNotEquals(
+                book,
+                bookDeleted
         );
     }
 }
