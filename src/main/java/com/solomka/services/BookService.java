@@ -47,4 +47,8 @@ public class BookService {
         }
         return name.trim();
     }
+
+    public Book deleteBookById(final String bookId) {
+        return this.bookDao.deleteById(bookId);
+    }
 }
