@@ -4,6 +4,7 @@ import com.solomka.daos.BookDao;
 import com.solomka.exceptions.BadIdException;
 import com.solomka.exceptions.BookNameIsNullException;
 import com.solomka.models.Book;
+import com.solomka.models.CreateBookDto;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -11,7 +12,10 @@ import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
@@ -72,6 +76,32 @@ public class BookServiceTest {
         assertNotEquals(
                 book,
                 bookDeleted
+        );
+    }
+
+    @Test
+    void createBookTest(){
+        String bookId="book id";
+        CreateBookDto createBookDto = new CreateBookDto();
+        createBookDto.setName("Book #1");
+        createBookDto.setDescription("Description");
+        createBookDto.setAuthors(List.of("John Brien"));
+        createBookDto.setNumberOfWords(1000);
+        createBookDto.setRating(10);
+        createBookDto.setYearOfPublication(1999);
+        Book newBook = new Book();
+        newBook.setBookId(bookId);
+        newBook.setName(createBookDto.getName());
+        newBook.setDescription(createBookDto.getDescription());
+        newBook.setAuthors(createBookDto.getAuthors());
+        newBook.setNumberOfWords(createBookDto.getNumberOfWords());
+        newBook.setRating(createBookDto.getRating());
+        newBook.setYearOfPublication(createBookDto.getYearOfPublication());
+        when(bookDao.addBook(any(Book.class))).thenReturn(newBook);
+        Book bookCreated = bookService.createBook(createBookDto);
+        assertEquals(
+                newBook,
+                bookCreated
         );
     }
 }
